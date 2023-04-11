@@ -24,6 +24,9 @@ let games = db.getAvailableGames();
 			screenshots,
 			version,
 		} = game;
+
+		tag = tag.replace(/[\n\"]/g, '');
+
 		let vaildTitle = sanitizeFilename(title);
 		let imagePath = path.join(__dirname, 'images', vaildTitle);
 		if (fs.existsSync(imagePath)) {
@@ -87,7 +90,7 @@ ${screenshotsStr ?? '暂无'}
 
 > 游戏大小：${size ?? '未知'}
 
-[${magnet}](${magnet})`;
+[磁力链接](${magnet})`;
 			if (fs.existsSync(savePath)) {
 				log.warn('文件已存在', savePath);
 				continue;

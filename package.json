@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "fitgirl": "node ./src/fitgirl.js",
-    "test": "node ./src/generateMD.js"
+    "g": "node ./src/generateMD.js"
   },
   "keywords": [],
   "author": "",
