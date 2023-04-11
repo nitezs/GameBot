@@ -118,18 +118,22 @@ class GamesDB {
 	}
 
 	// 检测记录中的字段是否完整
-	checkGameByTitle(title, version) {
+	checkGameByTitle(title) {
+		// 准备 SQL 语句
 		const stmt = this.db.prepare(`SELECT * FROM games WHERE title = ?;`);
-		const res = stmt.get(title);
-		if (res) {
-			if (version && version != res.version) {
-				return false;
-			}
-			if (res.magnet && res.image) {
-				return true;
-			} else {
-				return false;
-			}
+		// 执行 SQL 语句，获取数据
+		const game = stmt.get(title);
+		if (
+			game.description &&
+			game.image &&
+			game.magnet &&
+			game.screenshots &&
+			game.size &&
+			game.tag &&
+			game.developer &&
+			game.version
+		) {
+			return true;
 		} else {
 			return false;
 		}
