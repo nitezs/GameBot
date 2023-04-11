@@ -213,11 +213,13 @@ async function getTags($, element, tempData) {
 		);
 		let tags = '';
 		if (riotpixelslinkTags1.length > 0) {
-			tags += riotpixelslinkTags1[0].children[0].data + ',';
+			tags +=
+				riotpixelslinkTags1[0].children[0].data.replace(/[\n\"]/g, '') + ',';
 		}
 		if (riotpixelslinkTags2.length > 0) {
 			for (let i = 0; i < riotpixelslinkTags2.length; i++) {
-				tags += riotpixelslinkTags2[i].children[0].data + ',';
+				tags +=
+					riotpixelslinkTags2[i].children[0].data.replace(/[\n\"]/g, '') + ',';
 			}
 		}
 		tempData.tags = tags.substring(0, tags.length - 1);
