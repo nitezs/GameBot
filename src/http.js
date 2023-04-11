@@ -2,11 +2,17 @@ const axios = require('axios');
 const axiosRetry = require('axios-retry');
 const { createWriteStream } = require('fs');
 const path = require('path');
+const fs = require('fs');
 
-const errorLogStream = createWriteStream(
-	path.join(__dirname, '..', 'log', 'error.log'),
-	{ flags: 'a' }
-);
+let logPath = path.join(__dirname, '..', 'log');
+
+if (!fs.existsSync(logPath)) {
+	fs.mkdirSync(logPath, { recursive: true });
+}
+
+const errorLogStream = createWriteStream(path.join(logPath, 'error.log'), {
+	flags: 'a',
+});
 
 const axiosInstance = axios.create({
 	Headers: {

@@ -26,17 +26,27 @@ function getTitleAndVersion($, element, tempData) {
 	let hasFailed = false;
 	const title = $(element).find('h3:first>strong');
 	if (title.length > 0 && title[0].children.length > 0) {
-		tempData.title = title[0].children[0].data.trim();
+		const titleText = cheerio.load(title[0]);
+		if (titleText.length <= 0) {
+			log.error('标题获取失败，跳过');
+			hasFailed = true;
+			return hasFailed;
+		}
+		let titleAndVersion = titleText.text();
+		let version = titleText('span[style*="color: #808080"]');
+		if (version.length > 0) {
+			version = version.text();
+			titleAndVersion = titleAndVersion.replace(version, '').trim();
+			tempData.version = version.trim();
+		} else {
+			log.warn('版本号获取失败: ', titleAndVersion);
+		}
+		tempData.title = titleAndVersion;
 		if (tempData.title) {
 			log.info('正在获取: ', tempData.title);
 		} else {
 			log.error('标题获取失败，跳过');
 			hasFailed = true;
-		}
-		if (title[0].children[1]) {
-			tempData.version = title[0].children[1].children[0].data.trim();
-		} else {
-			log.warn('版本号获取失败: ', tempData.title);
 		}
 	} else {
 		hasFailed = true;
@@ -84,6 +94,11 @@ async function downloadImage($, element, tempData) {
 				log.warn('游戏封面下载失败: ', imageUrl);
 				log.info('尝试从riotpixels下载');
 				let riotpixelsUrl = images[0].parent.attribs['href'];
+				if (!riotpixelsUrl) {
+					log.error('riotpixels链接获取失败，跳过');
+					hasFailed = true; // 设置下载失败的标记
+					break;
+				}
 				let riotpixelsHtml = (await http(riotpixelsUrl)).data;
 				let riotpixels$ = cheerio.load(riotpixelsHtml);
 				let riotpixelsImages = riotpixels$('.cover img');
@@ -166,7 +181,7 @@ async function getMagnet($, element, tempData) {
 					let rutorInfo$ = cheerio.load(rutorInfoHtml);
 					let rutorInfoMagnet = rutorInfo$('a[href^="magnet:"]');
 					if (rutorInfoMagnet.length > 0) {
-						tempData.magnet = rutorInfoMagnet[0].attr['href'];
+						tempData.magnet = rutorInfoMagnet[0].attribs['href'];
 					} else {
 						log.error('没有找到磁力链接: ', tempData.title);
 						log.error('跳过游戏: ', tempData.title);
@@ -181,9 +196,7 @@ async function getMagnet($, element, tempData) {
 
 // 获取标签
 async function getTags($, element, tempData) {
-	const riotpixelslink = $(element).find(
-		'.entry-categories a:contains("riotpixels.com")'
-	);
+	const riotpixelslink = $(element).find('a[href*="riotpixels.com"]');
 	if (riotpixelslink.length > 0) {
 		let riotpixelslinkUrl = riotpixelslink[0].attribs['href'];
 		riotpixelslinkUrl = riotpixelslinkUrl.replace(
@@ -196,22 +209,22 @@ async function getTags($, element, tempData) {
 			'#tags_short>table:first tr:first td:first strong:first a'
 		);
 		let riotpixelslinkTags2 = riotpixelslink$(
-			'#tags_short>table:eq(1) tr td:eq(1) strong:first a'
+			'#tags_short>table:eq(1) tr td:odd a'
 		);
 		let tags = '';
 		if (riotpixelslinkTags1.length > 0) {
-			tags += riotpixelslinkTags1[0].attribs['title'] + ',';
+			tags += riotpixelslinkTags1[0].children[0].data + ',';
 		}
 		if (riotpixelslinkTags2.length > 0) {
 			for (let i = 0; i < riotpixelslinkTags2.length; i++) {
-				tags += riotpixelslinkTags2[i].attribs['title'] + ',';
+				tags += riotpixelslinkTags2[i].children[0].data + ',';
 			}
 		}
-		tempData.tags = tags;
+		tempData.tags = tags.substring(0, tags.length - 1);
 	}
 }
 
-// 获取资源大小、游戏分类、制作公司
+// 获取资源大小、制作公司
 function getOtherInfo($, element, tempData) {
 	// 获取文章的正文内容，并赋值给一个变量content
 	const content = $(element).find('.entry-content').text();
@@ -288,13 +301,13 @@ async function scrape(url, onlyGetPageSize = false) {
 				continue;
 			}
 
+			// 获取标签
+			await getTags($, element, tempData);
+
 			// 获取文章的简介
 			if (getDescription($, element, tempData)) {
 				log.warn('简介获取失败: ', tempData.title);
 			}
-
-			// 获取游戏分类
-			await getTags($, element, tempData);
 
 			// 获取资源大小、制作公司
 			getOtherInfo($, element, tempData);

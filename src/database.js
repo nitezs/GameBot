@@ -1,5 +1,11 @@
 const sqlite = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
+
+let dbPath = path.join(__dirname, '..', 'db');
+if (!fs.existsSync(dbPath)) {
+	fs.mkdirSync(dbPath, { recursive: true });
+}
 
 class GamesDB {
 	// 构造函数，传入数据库文件路径，创建实例时会执行
@@ -124,6 +130,8 @@ class GamesDB {
 		// 执行 SQL 语句，获取数据
 		const game = stmt.get(title);
 		if (
+			game &&
+			game.title &&
 			game.description &&
 			game.image &&
 			game.magnet &&
