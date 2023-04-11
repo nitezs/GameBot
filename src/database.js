@@ -76,23 +76,36 @@ class GamesDB {
 	// 根据游戏名称更新游戏数据
 	updateGameByTitle(
 		title,
-		{ tag, developer, size, magnet, description, image, screenshots, version }
+		{
+			tag = null,
+			developer = null,
+			size = null,
+			magnet = null,
+			description = null,
+			image = null,
+			screenshots = null,
+			version = null,
+		}
 	) {
+		const pstmt = this.db.prepare(`SELECT * FROM games WHERE title = ?;`);
+		const game = pstmt.get(title);
+
 		// 准备 SQL 语句
 		const stmt = this.db.prepare(
 			`UPDATE games SET tag = ?, developer = ?, size = ?, magnet = ?, description = ?, image = ?, screenshots = ?, version = ? WHERE title = ?;`
 		);
-		// 执行 SQL 语句，更新数据
+
+		// 只更新传递的参数
 		stmt.run(
-			tag,
-			developer,
-			size,
-			magnet,
-			description,
-			title,
-			image,
-			screenshots,
-			version
+			tag ?? game.tag,
+			developer ?? game.developer,
+			size ?? game.size,
+			magnet ?? game.magnet,
+			description ?? game.description,
+			image ?? game.image,
+			screenshots ?? game.screenshots,
+			version ?? game.version,
+			title
 		);
 	}
 
@@ -126,7 +139,7 @@ class GamesDB {
 	getAvailableGames() {
 		// 准备 SQL 语句
 		const stmt = this.db.prepare(
-			`SELECT * FROM games WHERE magnet IS NOT NULL AND TRIM(magnet)!='';`
+			`SELECT * FROM games WHERE magnet IS NOT NULL AND TRIM(magnet)!='' AND image IS NOT NULL AND TRIM(image)!='';`
 		);
 		// 执行 SQL 语句，获取数据
 		return stmt.all();

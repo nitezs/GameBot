@@ -1,13 +1,24 @@
 const path = require('path');
 function sanitizeFilename(filename, replaceWith = '_') {
-	let name = path.basename(filename, path.extname(filename));
 	const illegalRe = /[\/\?<>\\:\*\|\s\"\.]/g;
 	const controlRe = /[\x00-\x1f\x80-\x9f]/g;
-
-	return (
-		name.replace(illegalRe, replaceWith).replace(controlRe, replaceWith) +
-		path.extname(filename)
-	);
+	if (filename.length > 255) {
+		filename = filename.substring(0, 255);
+	}
+	return filename
+		.replace(illegalRe, replaceWith)
+		.replace(controlRe, replaceWith);
 }
 
-module.exports = { sanitizeFilename };
+function getFormattedDate() {
+	const date = new Date();
+	const year = date.getFullYear();
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	const day = date.getDate().toString().padStart(2, '0');
+	const hours = date.getHours().toString().padStart(2, '0');
+	const minutes = date.getMinutes().toString().padStart(2, '0');
+	const seconds = date.getSeconds().toString().padStart(2, '0');
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+module.exports = { sanitizeFilename, getFormattedDate };

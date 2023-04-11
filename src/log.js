@@ -5,19 +5,19 @@ class Log {
 
 	info(...args) {
 		if (this.logLevel === 'info') {
-			console.log(`[INFO] ${new Date().toISOString()}: `, ...args);
+			console.log(`[INFO]\t${new Date().toISOString()}: `, ...args);
 		}
 	}
 
 	warn(...args) {
 		if (this.logLevel === 'info' || this.logLevel === 'warn') {
-			console.warn(`[WARN] ${new Date().toISOString()}: `, ...args);
+			console.warn(`[WARN]\t${new Date().toISOString()}: `, ...args);
 		}
 	}
 
 	error(...args) {
 		if (this.logLevel !== 'off') {
-			console.error(`[ERROR] ${new Date().toISOString()}: `, ...args);
+			console.error(`[ERROR]\t${new Date().toISOString()}: `, ...args);
 		}
 	}
 }

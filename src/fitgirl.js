@@ -44,12 +44,14 @@ async function scrape(url, onlyGetPageSize = false) {
 
 			// 获取文章的标题，并赋值给临时对象的title属性
 			const title = $(element).find('h3:first>strong');
-			if (title) {
+			if (title.length > 0 && title[0].children.length > 0) {
 				tempData.title = title[0].children[0].data.trim();
 				log.info('正在获取: ', tempData.title);
 				if (title[0].children[1]) {
 					tempData.version = title[0].children[1].children[0].data.trim();
 				}
+			} else {
+				continue;
 			}
 
 			// 获取文章内的所有图片，并下载图片到本地
@@ -157,10 +159,16 @@ async function scrape(url, onlyGetPageSize = false) {
 			const developerMatch = content.match(developerRegex);
 			if (developerMatch) {
 				const developer = developerMatch[1].trim();
-				tempData.developer = developer
+				let tmpDeveloper = developer
 					.replace('Company:', '')
-					.replace('Companies:', '')
-					.trim();
+					.replace('Companies:', '');
+				if (tmpDeveloper.indexOf('Language') > -1) {
+					tmpDeveloper = tmpDeveloper.substring(
+						0,
+						tmpDeveloper.indexOf('Language')
+					);
+				}
+				tempData.developer = tmpDeveloper;
 			}
 
 			// 使用正则表达式，从正文内容中匹配资源大小，并赋值给临时对象的size属性
@@ -174,7 +182,7 @@ async function scrape(url, onlyGetPageSize = false) {
 			// 使用正则表达式，从正文内容中匹配磁力链接，并赋值给临时对象的magnet属性
 			let h = $(element).html();
 			if (h) {
-				const magnetRegex = /\"magnet:\?xt=urn:btih:(.*)\"/;
+				const magnetRegex = /\"magnet:\?xt=urn:btih:(.*?)\"/;
 				const magnetMatch = h.match(magnetRegex);
 				if (magnetMatch) {
 					const magnet = magnetMatch[0]
@@ -191,7 +199,8 @@ async function scrape(url, onlyGetPageSize = false) {
 		}
 		return hasFailed;
 	} catch (error) {
-		log.error(error);
+		log.error('发生未知错误', error);
+		return true;
 	}
 }
 
