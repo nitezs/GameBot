@@ -201,7 +201,7 @@ async function getTags($, element, tempData) {
 		let riotpixelslinkUrl = riotpixelslink[0].attribs['href'];
 		riotpixelslinkUrl = riotpixelslinkUrl.replace(
 			/https?:\/\/[a-zA-Z]{2}\./,
-			'https://zh.'
+			'https://en.'
 		);
 		let riotpixelslinkHtml = (await http(riotpixelslinkUrl)).data;
 		let riotpixelslink$ = cheerio.load(riotpixelslinkHtml);
